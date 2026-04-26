@@ -364,23 +364,21 @@ def main():
     else:
         category_names = config['domains'].get(args.domains, config['domains']['default'])
 
-    # Expand category names to actual domain lists
+    # Build domain -> category mapping and expand category names to actual domain lists
+    domain_to_category = {}
     domain_list = []
     for name in category_names:
         if name in config['domains']['categories']:
-            domain_list.extend(config['domains']['categories'][name])
+            for d in config['domains']['categories'][name]:
+                if d not in domain_to_category:
+                    domain_to_category[d] = name
+                    domain_list.append(d)
         else:
-            domain_list.append(name)  # Treat as direct domain name
+            if name not in domain_to_category:
+                domain_to_category[name] = "other"
+                domain_list.append(name)
 
-    # Remove duplicates while preserving order
-    seen = set()
-    domains = []
-    for d in domain_list:
-        if d not in seen:
-            seen.add(d)
-            domains.append(d)
-
-    logger.info(f"Processing {len(domains)} domains: {domains}")
+    logger.info(f"Processing {len(domain_list)} domains from categories: {category_names}")
 
     # Lookup all domains in parallel
     lookup_results = lookup_all_domains(domains, args.mode, config)
@@ -419,13 +417,27 @@ def main():
 
     update_time = datetime.now(timezone(timedelta(hours=8))).replace(microsecond=0).isoformat()
 
+    # Group results by category
+    def build_grouped_content(results, ip_width):
+        lines = []
+        current_category = None
+        for ip, domain in results:
+            cat = domain_to_category.get(domain, "other")
+            if cat != current_category:
+                if current_category is not None:
+                    lines.append("")
+                lines.append(f"# === {cat.upper()} ===")
+                current_category = cat
+            lines.append(f"{ip:<{ip_width}} {domain}")
+        return "\n".join(lines)
+
     ipv4_hosts_content = TMDB_HOST_TEMPLATE.format(
-        content="\n".join(f"{ip:<27} {domain}" for ip, domain in ipv4_results),
+        content=build_grouped_content(ipv4_results, 27),
         update_time=update_time
     ) if ipv4_results else ""
 
     ipv6_hosts_content = TMDB_HOST_TEMPLATE.format(
-        content="\n".join(f"{ip:<50} {domain}" for ip, domain in ipv6_results),
+        content=build_grouped_content(ipv6_results, 50),
         update_time=update_time
     ) if ipv6_results else ""
 
