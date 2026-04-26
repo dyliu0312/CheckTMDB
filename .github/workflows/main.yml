@@ -6,36 +6,32 @@ on:
     - cron: '0 10,22 * * *'  # 每天 10:00 和 22:00 执行
 
 permissions:
-  contents: write  # 确保有写入权限
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
-      
+      uses: actions/checkout@v4
+
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install --only-upgrade python3-pip
-        if [ -f requirements.txt ]; then sudo pip install -r requirements.txt; fi
-        
+      run: pip install -r requirements.txt
+
     - name: Run Python script
-      run: |
-        sudo python check_tmdb_github_dnschecked.py
-        
-    - name: 提交更改
+      run: python host.py
+
+    - name: Commit changes
       run: |
          git config --global user.name 'GitHub Action'
          git config --global user.email 'action@github.com'
-         git add README.md Tmdb_host_ipv4 Tmdb_host_ipv6
+         git add README.md tmdb-hosts tmdb-hosts-v6
          git commit -m "Update TMDB IP [action]" || echo "No changes to commit"
       continue-on-error: true
 
