@@ -52,7 +52,7 @@ hosts 文件位置：
 ## 命令行参数
 
 ```bash
-python check_tmdb.py [选项]
+python host.py [选项]
 ```
 
 **选项：**
@@ -77,22 +77,22 @@ python check_tmdb.py [选项]
 **使用示例：**
 ```bash
 # 默认模式（tmdb + imdb + thetvdb）
-python check_tmdb.py
+python host.py
 
 # 使用所有分类
-python check_tmdb.py --domains=extended
+python host.py --domains=extended
 
 # 仅查询 tmdb 和 thetvdb
-python check_tmdb.py --categories=tmdb,thetvdb
+python host.py --categories=tmdb,thetvdb
 
 # 使用 Google DNS 模式
-python check_tmdb.py --mode=google
+python host.py --mode=google
 
 # 追加 GitHub hosts
-python check_tmdb.py -G
+python host.py -G
 
 # 验证配置（不发起请求）
-python check_tmdb.py --dry-run
+python host.py --dry-run
 ```
 
 ## 致谢
