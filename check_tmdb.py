@@ -156,15 +156,16 @@ def dnschecker_lookup(domain: str, csrf_token: str, udp: float, record_type: str
     return []
 
 
-def lookup_domain_dnschecker(domain: str, config: dict) -> tuple:
+def lookup_domain_dnschecker(domain: str, config: dict, csrf_token: str = None, udp: float = None) -> tuple:
     """Lookup both IPv4 and IPv6 for a domain using dnschecker.org."""
     logger.info(f"Looking up {domain} via dnschecker.org")
-    udp = random.random() * 1000 + (int(time.time() * 1000) % 1000)
-    csrf_token = get_csrf_token(udp, config)
 
-    if not csrf_token:
-        logger.error(f"Failed to get CSRF token for {domain}")
-        return domain, [], []
+    if not csrf_token or not udp:
+        udp = random.random() * 1000 + (int(time.time() * 1000) % 1000)
+        csrf_token = get_csrf_token(udp, config)
+        if not csrf_token:
+            logger.error(f"Failed to get CSRF token for {domain}")
+            return domain, [], []
 
     ipv4_ips = dnschecker_lookup(domain, csrf_token, udp, "A", config)
     ipv6_ips = dnschecker_lookup(domain, csrf_token, udp, "AAAA", config)
@@ -314,7 +315,7 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     logger.info(f"Updated Tmdb_host_{filename}")
 
 
-def lookup_all_domains(domains: list, mode: str, config: dict) -> dict:
+def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str = None, udp: float = None) -> dict:
     """Look up all domains in parallel."""
     dns_workers = config['parallelism']['dns_workers']
 
@@ -322,7 +323,7 @@ def lookup_all_domains(domains: list, mode: str, config: dict) -> dict:
 
     results = {}
     with ThreadPoolExecutor(max_workers=dns_workers) as executor:
-        futures = {executor.submit(lookup_func, domain, config): domain for domain in domains}
+        futures = {executor.submit(lookup_func, domain, config, csrf_token, udp): domain for domain in domains}
         for future in as_completed(futures):
             domain = futures[future]
             try:
@@ -348,12 +349,12 @@ def main():
                         help='Domain set to use (default: default)')
     parser.add_argument('--categories', type=str, default=None,
                         help='Comma-separated categories to use (e.g., tmdb,imdb,thetvdb)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Show configuration without making requests')
 
     args = parser.parse_args()
 
     config = load_config(args.config)
-
-    logger.info(f"Starting TMDB domain check in {args.mode} mode")
 
     # Resolve domains from categories
     if args.categories:
@@ -375,10 +376,31 @@ def main():
                 domain_to_category[name] = "other"
                 domain_list.append(name)
 
+    if args.dry_run:
+        logger.info(f"[DRY RUN] Mode: {args.mode}")
+        logger.info(f"[DRY RUN] Categories: {category_names}")
+        logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
+        logger.info(f"[DRY RUN] Country code: {config['country_code']}")
+        logger.info(f"[DRY RUN] Parallelism: dns_workers={config['parallelism']['dns_workers']}, ping_workers={config['parallelism']['ping_workers']}")
+        logger.info("[DRY RUN] Dry run complete, no requests made")
+        return
+
+    logger.info(f"Starting TMDB domain check in {args.mode} mode")
     logger.info(f"Processing {len(domain_list)} domains from categories: {category_names}")
 
+    # Pre-fetch CSRF token and UDP for dnschecker mode
+    csrf_token = None
+    udp = None
+    if args.mode == 'dnschecker':
+        udp = random.random() * 1000 + (int(time.time() * 1000) % 1000)
+        csrf_token = get_csrf_token(udp, config)
+        if not csrf_token:
+            logger.error("Failed to get CSRF token, exiting")
+            sys.exit(1)
+        logger.info("CSRF token obtained, will reuse for all domains")
+
     # Lookup all domains in parallel
-    lookup_results = lookup_all_domains(domains, args.mode, config)
+    lookup_results = lookup_all_domains(domain_list, args.mode, config, csrf_token, udp)
 
     ipv4_results = []
     ipv6_results = []
