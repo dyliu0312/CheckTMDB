@@ -1,99 +1,100 @@
 # CheckTMDB
 
-每日自动更新TMDB，themoviedb、thetvdb 国内可正常连接IP，解决DNS污染，供tinyMediaManager(TMM削刮器)、Kodi的刮削器、群晖VideoStation的海报墙、Plex Server的元数据代理、Emby Server元数据下载器、Infuse、Nplayer等正常削刮影片信息。
+每日自动更新 TMDB、themoviedb、thetvdb 国内可正常连接 IP，解决 DNS 污染，供 tinyMediaManager、Kodi、群晖 VideoStation、Plex、Emby、Infuse、Nplayer 等正常刮削影片信息。
 
-## 一、前景
-
-自从我早两年使用了黑群NAS以后，下了好多的电影电视剧，发现电视端无法生成正常的海报墙。查找资料得知应该是 themoviedb.org、tmdb.org 无法正常访问，因为DNS受到了污染无法正确解析到TMDB的IP，故依葫芦画瓢写了一个python脚本，每日定时通过[dnschecker](https://dnschecker.org/)查询出最佳IP，并自动同步到路由器外挂hosts，可正常削刮。
-
-**本项目无需安装任何程序**
-
-通过修改本地、路由器 hosts 文件，即可正常削刮影片信息。
+**本项目无需安装任何程序**，通过修改本地或路由器 hosts 文件即可使用。
 
 ## 文件地址
 
-- TMDB IPv4 hosts：`https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv4` ，[链接](https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv4)
-- TMDB IPv6 hosts：`https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv6` ，[链接](https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv6)
+- TMDB IPv4 hosts：[Tmdb_host_ipv4](https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/Tmdb_host_ipv4)
+- TMDB IPv6 hosts：[Tmdb_host_ipv6](https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/Tmdb_host_ipv6)
 
-## 二、使用方法
+## 使用方法
 
-### 2.1 手动方式
+### 手动方式
 
-#### 2.1.1 IPv4地址复制下面的内容
+#### 1. 复制 hosts 内容
 
+**IPv4：**
 ```bash
 {ipv4_hosts_str}
 ```
 
-该内容会自动定时更新， 数据更新时间：{update_time}
-
-#### 2.1.2 IPv6地址复制下面的内容
-
+**IPv6：**
 ```bash
 {ipv6_hosts_str}
 ```
 
-该内容会自动定时更新， 数据更新时间：{update_time}
-
 > [!NOTE]
-> 由于项目搭建在Github Aciton，延时数据获取于Github Action 虚拟主机网络环境，请自行测试可用性，建议使用本地网络环境自动设置。
+> 由于项目运行在 GitHub Actions 网络环境，请自行测试可用性。
 
-#### 2.1.3 修改 hosts 文件
+#### 2. 修改 hosts 文件
 
-hosts 文件在每个系统的位置不一，详情如下：
+hosts 文件位置：
+- Windows：`C:\Windows\System32\drivers\etc\hosts`
+- Linux/Mac：`/etc/hosts`
+- Android：`/system/etc/hosts`
 
-- Windows 系统：`C:\Windows\System32\drivers\etc\hosts`
-- Linux 系统：`/etc/hosts`
-- Mac（苹果电脑）系统：`/etc/hosts`
-- Android（安卓）系统：`/system/etc/hosts`
-- iPhone（iOS）系统：`/etc/hosts`
+#### 3. 刷新 DNS
 
-修改方法，把第一步的内容复制到文本末尾：
+- Windows：`ipconfig /flushdns`
+- Linux：`sudo nscd restart` 或 `sudo /etc/init.d/nscd restart`
+- Mac：`sudo killall -HUP mDNSResponder`
 
-1. Windows 使用记事本。
-2. Linux、Mac 使用 Root 权限：`sudo vi /etc/hosts`。
-3. iPhone、iPad 须越狱、Android 必须要 root。
+### 自动方式（SwitchHosts）
 
-#### 2.1.4 激活生效
+1. 安装 [SwitchHosts](https://github.com/oldj/SwitchHosts/releases/latest)
+2. 添加远程 hosts：
+   - IPv4：`https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/Tmdb_host_ipv4`
+   - IPv6：`https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/Tmdb_host_ipv6`
+3. 设置自动刷新：`1 小时`
 
-大部分情况下是直接生效，如未生效可尝试下面的办法，刷新 DNS：
+## 命令行参数
 
-1. Windows：在 CMD 窗口输入：`ipconfig /flushdns`
+```bash
+python check_tmdb.py [选项]
+```
 
-2. Linux 命令：`sudo nscd restart`，如报错则须安装：`sudo apt install nscd` 或 `sudo /etc/init.d/nscd restart`
+**选项：**
+| 参数 | 说明 |
+|------|------|
+| `--mode {dnschecker,google}` | DNS 查询模式（默认：dnschecker） |
+| `--categories CATEGORIES` | 指定分类，用逗号分隔（如 `tmdb,imdb,thetvdb`） |
+| `--domains {default,extended}` | 预设域名组合（默认：default） |
+| `-G, --github` | 追加 GitHub hosts 到输出 |
+| `--dry-run` | 仅显示配置，不发起请求 |
+| `--config CONFIG` | 指定配置文件路径 |
 
-3. Mac 命令：`sudo killall -HUP mDNSResponder`
+**域名分类：**
+| 分类 | 说明 |
+|------|------|
+| `tmdb` | TMDB 电影/TV 元数据 |
+| `imdb` | IMDB 电影数据库 |
+| `thetvdb` | TVDB TV 刮削 |
+| `fanart` | Fanart 艺术图 |
+| `trakt` | Trakt 进度同步 |
 
-**Tips：** 上述方法无效可以尝试重启机器。
+**使用示例：**
+```bash
+# 默认模式（tmdb + imdb + thetvdb）
+python check_tmdb.py
 
-### 2.2 自动方式
+# 使用所有分类
+python check_tmdb.py --domains=extended
 
-#### 2.2.1 安装 SwitchHosts
+# 仅查询 tmdb 和 thetvdb
+python check_tmdb.py --categories=tmdb,thetvdb
 
-GitHub 发行版：https://github.com/oldj/SwitchHosts/releases/latest
+# 使用 Google DNS 模式
+python check_tmdb.py --mode=google
 
-#### 2.2.2 添加 hosts
+# 追加 GitHub hosts
+python check_tmdb.py -G
 
-点击左上角“+”，并进行以下配置：
+# 验证配置（不发起请求）
+python check_tmdb.py --dry-run
+```
 
-- Hosts 类型：`远程`
-- Hosts 标题：任意
-- URL
-    - IPv4：`https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv4`
-    - IPv6：`https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv6`
-- 自动刷新：`1 小时`
+## 致谢
 
-#### 2.2.3 启用 hosts
-
-在左侧边栏启用 hosts，首次使用时软件会自动获取内容。如果无法连接到 GitHub，可以尝试用同样的方法添加 [GitHub520](https://github.com/521xueweihan/GitHub520) hosts。
-
-## 三、参数说明
-
-1. 直接执行`check_tmdb_github.py`脚本，同时查询IPv4及IPv6地址，目录生成`Tmdb_host_ipv4`文件，及`Tmdb_host_ipv6`文件；
-2. 带`-G` 参数执行：`check_tmdb_github.py -G`，会在`Tmdb_host_ipv4`文件，及`Tmdb_host_ipv6`文件中追加 Github IPv4 地址；
-
-## 其他
-
-- [x] 自学薄弱编程基础，大部分代码基于AI辅助生成，此项目过程中，主要人为解决的是：通过 [dnschecker](https://dnschecker.org/) 提交时，通过计算出正确的udp参数，获取正确的csrftoken，携带正确的referer提交！
-- [x] README.md 及 部分代码 参考[GitHub520](https://github.com/521xueweihan/GitHub520)
-- [x] * 本项目仅在本机测试通过，如有问题欢迎提 [issues](https://github.com/cnwikee/CheckTMDB/issues/new)
+- 上游项目：[cnwikee/CheckTMDB](https://github.com/cnwikee/CheckTMDB/)
