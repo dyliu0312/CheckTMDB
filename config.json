@@ -1,0 +1,95 @@
+{
+  "country_code": "jp",
+  "dns_mode": "dnschecker",
+  "domains": {
+    "default": [
+      "tmdb.org",
+      "api.tmdb.org",
+      "files.tmdb.org",
+      "themoviedb.org",
+      "api.themoviedb.org",
+      "www.themoviedb.org",
+      "auth.themoviedb.org",
+      "image.tmdb.org",
+      "images.tmdb.org",
+      "imdb.com",
+      "www.imdb.com",
+      "secure.imdb.com",
+      "s.media-imdb.com",
+      "us.dd.imdb.com",
+      "www.imdb.to",
+      "origin-www.imdb.com",
+      "ia.media-imdb.com",
+      "thetvdb.com",
+      "api.thetvdb.com",
+      "artworks.thetvdb.com",
+      "f.media-amazon.com",
+      "imdb-video.media-imdb.com"
+    ],
+    "extended": [
+      "tmdb.org",
+      "api.tmdb.org",
+      "files.tmdb.org",
+      "themoviedb.org",
+      "api.themoviedb.org",
+      "www.themoviedb.org",
+      "auth.themoviedb.org",
+      "image.tmdb.org",
+      "images.tmdb.org",
+      "imdb.com",
+      "www.imdb.com",
+      "secure.imdb.com",
+      "s.media-imdb.com",
+      "us.dd.imdb.com",
+      "www.imdb.to",
+      "origin-www.imdb.com",
+      "ia.media-imdb.com",
+      "thetvdb.com",
+      "api.thetvdb.com",
+      "artworks.thetvdb.com",
+      "f.media-amazon.com",
+      "imdb-video.media-imdb.com",
+      "webservice.fanart.tv",
+      "images.fanart.tv",
+      "assets.fanart.tv",
+      "fanart.tv",
+      "api.trakt.tv",
+      "trakt.tv"
+    ]
+  },
+  "retry": {
+    "max_tries": 3,
+    "base_delay": 1.0,
+    "max_delay": 30.0,
+    "exponential_base": 2,
+    "jitter": true
+  },
+  "ping": {
+    "timeout": 2.0,
+    "port": 80
+  },
+  "rate_limiting": {
+    "between_domains_delay": 1.0,
+    "between_ips_delay": 0.5
+  },
+  "parallelism": {
+    "dns_workers": 5,
+    "ping_workers": 10
+  },
+  "apis": {
+    "dnschecker": {
+      "base_url": "https://dnschecker.org",
+      "csrf_url": "https://dnschecker.org/ajax_files/gen_csrf.php",
+      "api_url": "https://dnschecker.org/ajax_files/api/220"
+    },
+    "google": {
+      "base_url": "https://dns.google/resolve"
+    },
+    "github_hosts": [
+      "https://hosts.gitcdn.top/hosts.txt",
+      "https://raw.githubusercontent.com/521xueweihan/GitHub520/refs/heads/main/hosts",
+      "https://gitlab.com/ineo6/hosts/-/raw/master/next-hosts",
+      "https://raw.githubusercontent.com/ittuann/GitHub-IP-hosts/refs/heads/main/hosts_single"
+    ]
+  }
+}
