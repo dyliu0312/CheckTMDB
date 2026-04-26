@@ -349,6 +349,8 @@ def main():
                         help='Append GitHub hosts to output')
     parser.add_argument('--domains', choices=['default', 'extended'], default='default',
                         help='Domain set to use (default: default)')
+    parser.add_argument('--categories', type=str, default=None,
+                        help='Comma-separated categories to use (e.g., tmdb,imdb,thetvdb)')
 
     args = parser.parse_args()
 
@@ -356,8 +358,29 @@ def main():
 
     logger.info(f"Starting TMDB domain check in {args.mode} mode")
 
-    domains = config['domains'].get(args.domains, config['domains']['default'])
-    logger.info(f"Processing {len(domains)} domains")
+    # Resolve domains from categories
+    if args.categories:
+        category_names = [c.strip() for c in args.categories.split(',')]
+    else:
+        category_names = config['domains'].get(args.domains, config['domains']['default'])
+
+    # Expand category names to actual domain lists
+    domain_list = []
+    for name in category_names:
+        if name in config['domains']['categories']:
+            domain_list.extend(config['domains']['categories'][name])
+        else:
+            domain_list.append(name)  # Treat as direct domain name
+
+    # Remove duplicates while preserving order
+    seen = set()
+    domains = []
+    for d in domain_list:
+        if d not in seen:
+            seen.add(d)
+            domains.append(d)
+
+    logger.info(f"Processing {len(domains)} domains: {domains}")
 
     # Lookup all domains in parallel
     lookup_results = lookup_all_domains(domains, args.mode, config)

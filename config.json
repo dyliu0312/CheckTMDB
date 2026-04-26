@@ -2,60 +2,48 @@
   "country_code": "jp",
   "dns_mode": "dnschecker",
   "domains": {
-    "default": [
-      "tmdb.org",
-      "api.tmdb.org",
-      "files.tmdb.org",
-      "themoviedb.org",
-      "api.themoviedb.org",
-      "www.themoviedb.org",
-      "auth.themoviedb.org",
-      "image.tmdb.org",
-      "images.tmdb.org",
-      "imdb.com",
-      "www.imdb.com",
-      "secure.imdb.com",
-      "s.media-imdb.com",
-      "us.dd.imdb.com",
-      "www.imdb.to",
-      "origin-www.imdb.com",
-      "ia.media-imdb.com",
-      "thetvdb.com",
-      "api.thetvdb.com",
-      "artworks.thetvdb.com",
-      "f.media-amazon.com",
-      "imdb-video.media-imdb.com"
-    ],
-    "extended": [
-      "tmdb.org",
-      "api.tmdb.org",
-      "files.tmdb.org",
-      "themoviedb.org",
-      "api.themoviedb.org",
-      "www.themoviedb.org",
-      "auth.themoviedb.org",
-      "image.tmdb.org",
-      "images.tmdb.org",
-      "imdb.com",
-      "www.imdb.com",
-      "secure.imdb.com",
-      "s.media-imdb.com",
-      "us.dd.imdb.com",
-      "www.imdb.to",
-      "origin-www.imdb.com",
-      "ia.media-imdb.com",
-      "thetvdb.com",
-      "api.thetvdb.com",
-      "artworks.thetvdb.com",
-      "f.media-amazon.com",
-      "imdb-video.media-imdb.com",
-      "webservice.fanart.tv",
-      "images.fanart.tv",
-      "assets.fanart.tv",
-      "fanart.tv",
-      "api.trakt.tv",
-      "trakt.tv"
-    ]
+    "categories": {
+      "tmdb": [
+        "tmdb.org",
+        "api.tmdb.org",
+        "files.tmdb.org",
+        "themoviedb.org",
+        "api.themoviedb.org",
+        "www.themoviedb.org",
+        "auth.themoviedb.org",
+        "image.tmdb.org",
+        "images.tmdb.org"
+      ],
+      "imdb": [
+        "imdb.com",
+        "www.imdb.com",
+        "secure.imdb.com",
+        "s.media-imdb.com",
+        "us.dd.imdb.com",
+        "www.imdb.to",
+        "origin-www.imdb.com",
+        "ia.media-imdb.com",
+        "f.media-amazon.com",
+        "imdb-video.media-imdb.com"
+      ],
+      "thetvdb": [
+        "thetvdb.com",
+        "api.thetvdb.com",
+        "artworks.thetvdb.com"
+      ],
+      "fanart": [
+        "webservice.fanart.tv",
+        "images.fanart.tv",
+        "assets.fanart.tv",
+        "fanart.tv"
+      ],
+      "trakt": [
+        "api.trakt.tv",
+        "trakt.tv"
+      ]
+    },
+    "default": ["tmdb", "imdb", "thetvdb"],
+    "extended": ["tmdb", "imdb", "thetvdb", "fanart", "trakt"]
   },
   "retry": {
     "max_tries": 3,
