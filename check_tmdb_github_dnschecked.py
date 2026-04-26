@@ -29,6 +29,7 @@ DOMAINS = [
     'ia.media-imdb.com',
     'thetvdb.com',
     'api.thetvdb.com',
+    'artworks.thetvdb.com',
     'ia.media-imdb.com',
     'f.media-amazon.com',
     'imdb-video.media-imdb.com',
