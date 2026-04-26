@@ -300,8 +300,13 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
 
 
 def write_host_file(hosts_content: str, filename: str, github_append: bool = False, config: dict = None) -> None:
-    """Write hosts content to Tmdb_host_ipv4/ipv6 file."""
-    output_file_path = os.path.join(os.path.dirname(__file__), f"Tmdb_host_{filename}")
+    """Write hosts content to tmdb-hosts or tmdb-hosts-v6 file."""
+    if filename == 'ipv4':
+        output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts")
+        log_name = "tmdb-hosts"
+    else:
+        output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts-v6")
+        log_name = "tmdb-hosts-v6"
 
     if github_append:
         logger.info("Appending GitHub hosts")
@@ -312,7 +317,7 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     with open(output_file_path, "w", encoding='utf-8') as f:
         f.write(hosts_content)
 
-    logger.info(f"Updated Tmdb_host_{filename}")
+    logger.info(f"Updated {log_name}")
 
 
 def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str = None, udp: float = None) -> dict:
