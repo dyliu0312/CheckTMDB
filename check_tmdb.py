@@ -59,9 +59,6 @@ def retry_with_backoff(max_tries: int = 3, base_delay: float = 1.0,
 TMDB_HOST_TEMPLATE = """# Tmdb Hosts Start
 {content}
 # Update time: {update_time}
-# IPv4 Update url: https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv4
-# IPv6 Update url: https://raw.githubusercontent.com/cnwikee/CheckTMDB/refs/heads/main/Tmdb_host_ipv6
-# Star me: https://github.com/cnwikee/CheckTMDB
 # Tmdb Hosts End
 """
 
