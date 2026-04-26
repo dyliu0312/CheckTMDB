@@ -212,7 +212,7 @@ def google_lookup(domain: str, record_type: str) -> list:
     return all_ips
 
 
-def lookup_domain_google(domain: str, config: dict) -> tuple:
+def lookup_domain_google(domain: str, config: dict, csrf_token: str = None, udp: float = None) -> tuple:
     """Lookup both IPv4 and IPv6 for a domain using Google DNS."""
     ipv4_ips = google_lookup(domain, "A")
     time.sleep(config['rate_limiting']['between_domains_delay'])
