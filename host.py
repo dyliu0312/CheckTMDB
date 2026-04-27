@@ -113,71 +113,6 @@ def find_fastest_ip(ips: list, ping_workers: int = 10, between_ips_delay: float 
     return fastest[0]
 
 
-# DNS Checker (dnschecker.org) mode functions
-@retry_with_backoff(max_tries=3, base_delay=1.0)
-def get_csrf_token(udp: float, config: dict) -> Optional[str]:
-    """Get CSRF token from dnschecker.org."""
-    csrf_url = config['apis']['dnschecker']['csrf_url']
-    country_code = config['country_code']
-    headers = {
-        'accept': 'application/json, text/javascript, */*; q=0.01',
-        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'referer': f'https://dnschecker.org/country/{country_code}/',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
-        'x-requested-with': 'XMLHttpRequest'
-    }
-
-    response = requests.get(f"{csrf_url}?udp={udp}", headers=headers)
-    if response.status_code == 200:
-        return response.json().get('csrf')
-    return None
-
-
-@retry_with_backoff(max_tries=3, base_delay=1.0)
-def dnschecker_lookup(domain: str, csrf_token: str, udp: float, record_type: str, config: dict) -> list:
-    """Lookup domain IPs using dnschecker.org API."""
-    api_url = config['apis']['dnschecker']['api_url']
-    country_code = config['country_code']
-    argument = "A" if record_type == "A" else "AAAA"
-
-    url = f"{api_url}/{argument}/{domain}?dns_key=country&dns_value={country_code}&v=0.36&cd_flag=1&upd={udp}"
-    headers = {
-        'accept': 'application/json, text/javascript, */*; q=0.01',
-        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'csrftoken': csrf_token,
-        'referer': f'https://dnschecker.org/country/{country_code}/',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
-        'x-requested-with': 'XMLHttpRequest'
-    }
-
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        if 'result' in data and 'ips' in data['result']:
-            ips_str = data['result']['ips']
-            if '<br />' in ips_str:
-                return [ip.strip() for ip in ips_str.split('<br />') if ip.strip()]
-            elif ips_str.strip():
-                return [ips_str.strip()]
-    return []
-
-
-def lookup_domain_dnschecker(domain: str, config: dict, csrf_token: str|None = None, udp: float|None = None) -> tuple:
-    """Lookup both IPv4 and IPv6 for a domain using dnschecker.org."""
-    logger.info(f"Looking up {domain} via dnschecker.org")
-
-    if not csrf_token or not udp:
-        udp = random.random() * 1000 + (int(time.time() * 1000) % 1000)
-        csrf_token = get_csrf_token(udp, config)
-        if not csrf_token:
-            logger.error(f"Failed to get CSRF token for {domain}")
-            return domain, [], []
-
-    ipv4_ips = dnschecker_lookup(domain, csrf_token, udp, "A", config)
-    ipv6_ips = dnschecker_lookup(domain, csrf_token, udp, "AAAA", config)
-
-    return domain, ipv4_ips, ipv6_ips
-
 
 # Google DNS mode functions
 @retry_with_backoff(max_tries=3, base_delay=1.0)
@@ -326,19 +261,13 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     logger.info(f"Updated {log_name}")
 
 
-def lookup_all_domains(domains: list, mode: str, config: dict, timeout: int = 30, csrf_token: str|None = None, udp: float|None = None) -> dict:
-    """Look up all domains in parallel."""
+def lookup_all_domains(domains: list, config: dict, timeout: int = 30) -> dict:
+    """Look up all domains in parallel using Google DNS."""
     dns_workers = config['parallelism']['dns_workers']
 
     results = {}
     with ThreadPoolExecutor(max_workers=dns_workers) as executor:
-        if mode == 'dnschecker' and csrf_token is not None and udp is not None:
-            futures = {executor.submit(lookup_domain_dnschecker, domain, config, csrf_token): domain for domain in domains}
-        elif mode == 'google':
-            futures = {executor.submit(lookup_domain_google, domain, config, timeout): domain for domain in domains}
-        else:
-            logger.error(f"Invalid mode: {mode}")
-            return results
+        futures = {executor.submit(lookup_domain_google, domain, config, timeout): domain for domain in domains}
         for future in as_completed(futures):
             domain = futures[future]
             try:
@@ -354,8 +283,6 @@ def lookup_all_domains(domains: list, mode: str, config: dict, timeout: int = 30
 
 def main():
     parser = argparse.ArgumentParser(description='Check TMDB domains and find fastest IPs')
-    parser.add_argument('--mode', choices=['dnschecker', 'google'], default='dnschecker',
-                        help='DNS lookup mode (default: dnschecker)')
     parser.add_argument('--config', type=str, default=None,
                         help='Path to config.json (default: ./config.json)')
     parser.add_argument('-G', '--github', action='store_true',
@@ -394,7 +321,7 @@ def main():
                 domain_list.append(name)
 
     if args.dry_run:
-        logger.info(f"[DRY RUN] Mode: {args.mode}")
+        
         logger.info(f"[DRY RUN] Timeout: {args.timeout}s")
         logger.info(f"[DRY RUN] Categories: {category_names}")
         logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
@@ -403,22 +330,11 @@ def main():
         logger.info("[DRY RUN] Dry run complete, no requests made")
         return
 
-    logger.info(f"Starting TMDB domain check in {args.mode} mode")
+    logger.info("Starting TMDB domain check (Google DNS mode)")
     logger.info(f"Processing {len(domain_list)} domains from categories: {category_names}")
 
-    # Pre-fetch CSRF token and UDP for dnschecker mode
-    csrf_token = None
-    udp = None
-    if args.mode == 'dnschecker':
-        udp = random.random() * 1000 + (int(time.time() * 1000) % 1000)
-        csrf_token = get_csrf_token(udp, config)
-        if not csrf_token:
-            logger.error("Failed to get CSRF token, exiting")
-            sys.exit(1)
-        logger.info("CSRF token obtained, will reuse for all domains")
-
-    # Lookup all domains in parallel
-    lookup_results = lookup_all_domains(domain_list, args.mode, config, args.timeout, csrf_token, udp)
+    # Lookup all domains in parallel (Google DNS mode)
+    lookup_results = lookup_all_domains(domain_list, config, args.timeout)
 
     ipv4_results = []
     ipv6_results = []
