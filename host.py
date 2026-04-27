@@ -84,20 +84,34 @@ def validate_ip(ip: str) -> bool:
     return True
 
 
+import subprocess
+
 def ping_ip(ip: str, timeout: float = 2.0) -> float:
     """Ping an IP address and return median latency of 3 attempts (in milliseconds)."""
     try:
-        from ping3 import ping
         times = []
         for _ in range(3):
-            result = ping(ip, timeout=timeout)
-            if result is not None:
-                times.append(result * 1000)  # Convert to ms
-        
+            # Use system ping command (works in containers)
+            if ':' in ip:  # IPv6
+                cmd = ['ping', '-6', '-n', '-W', str(int(timeout)), '-c', '1', ip]
+            else:  # IPv4
+                cmd = ['ping', '-4', '-n', '-W', str(int(timeout)), '-c', '1', ip]
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 1)
+
+            # Parse latency from output (Linux format: "time=12.3 ms")
+            for line in result.stdout.split('\n'):
+                if 'time=' in line:
+                    # Handle both "time=12.3 ms" and "time=12.3" formats
+                    import re
+                    match = re.search(r'time[=<](\d+\.?\d*)', line)
+                    if match:
+                        times.append(float(match.group(1)))
+                    break
+
         if not times:
             return float('inf')
-        
-        # Return median (middle value after sorting)
+
         return sorted(times)[len(times) // 2]
     except Exception as e:
         logger.debug(f"Ping {ip} failed: {e}")
