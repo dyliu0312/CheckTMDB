@@ -208,9 +208,20 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
     output_doc_path = os.path.join(os.path.dirname(__file__), "README.md")
     template_path = os.path.join(os.path.dirname(__file__), "README_template.md")
 
+    # If README.md doesn't exist, generate from template
     if not os.path.exists(output_doc_path):
-        logger.error("README.md not found")
-        return False
+        logger.info("README.md not found, generating from template")
+        with open(template_path, "r", encoding='utf-8') as f:
+            template_str = f.read()
+        # Generate with empty content placeholders
+        hosts_content = template_str.format(
+            ipv4_hosts_str="# (IPv4 hosts will be generated on next run)",
+            ipv6_hosts_str="# (IPv6 hosts will be generated on next run)",
+            update_time=update_time
+        )
+        with open(output_doc_path, "w", encoding='utf-8') as f:
+            f.write(hosts_content)
+        logger.info("README.md generated from template")
 
     with open(output_doc_path, "r", encoding='utf-8') as f:
         old_readme_md_content = f.read()
