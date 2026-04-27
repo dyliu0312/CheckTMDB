@@ -156,7 +156,7 @@ def dnschecker_lookup(domain: str, csrf_token: str, udp: float, record_type: str
     return []
 
 
-def lookup_domain_dnschecker(domain: str, config: dict, csrf_token: str = None, udp: float = None) -> tuple:
+def lookup_domain_dnschecker(domain: str, config: dict, csrf_token: str|None = None, udp: float|None = None) -> tuple:
     """Lookup both IPv4 and IPv6 for a domain using dnschecker.org."""
     logger.info(f"Looking up {domain} via dnschecker.org")
 
@@ -212,7 +212,7 @@ def google_lookup(domain: str, record_type: str) -> list:
     return all_ips
 
 
-def lookup_domain_google(domain: str, config: dict, csrf_token: str = None, udp: float = None) -> tuple:
+def lookup_domain_google(domain: str, config: dict) -> tuple:
     """Lookup both IPv4 and IPv6 for a domain using Google DNS."""
     ipv4_ips = google_lookup(domain, "A")
     time.sleep(config['rate_limiting']['between_domains_delay'])
@@ -239,7 +239,7 @@ def get_github_hosts(config: dict) -> Optional[str]:
     return None
 
 
-def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: str, github_append: bool = False, config: dict = None) -> bool:
+def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: str, github_append: bool = False, config: dict|None = None) -> bool:
     """Write hosts content to files."""
     output_doc_path = os.path.join(os.path.dirname(__file__), "README.md")
     template_path = os.path.join(os.path.dirname(__file__), "README_template.md")
@@ -299,7 +299,7 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
     return True
 
 
-def write_host_file(hosts_content: str, filename: str, github_append: bool = False, config: dict = None) -> None:
+def write_host_file(hosts_content: str, filename: str, github_append: bool = False, config: dict|None = None) -> None:
     """Write hosts content to tmdb-hosts or tmdb-hosts-v6 file."""
     if filename == 'ipv4':
         output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts")
@@ -308,9 +308,9 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
         output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts-v6")
         log_name = "tmdb-hosts-v6"
 
-    if github_append:
+    if github_append and config is not None:
         logger.info("Appending GitHub hosts")
-        github_hosts = get_github_hosts(config) if config else None
+        github_hosts = get_github_hosts(config)
         if github_hosts:
             hosts_content = hosts_content + "\n" + github_hosts
 
@@ -320,15 +320,19 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     logger.info(f"Updated {log_name}")
 
 
-def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str = None, udp: float = None) -> dict:
+def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str|None = None, udp: float|None = None) -> dict:
     """Look up all domains in parallel."""
     dns_workers = config['parallelism']['dns_workers']
 
-    lookup_func = lookup_domain_dnschecker if mode == 'dnschecker' else lookup_domain_google
-
     results = {}
     with ThreadPoolExecutor(max_workers=dns_workers) as executor:
-        futures = {executor.submit(lookup_func, domain, config, csrf_token, udp): domain for domain in domains}
+        if mode == 'dnschecker' and csrf_token is not None and udp is not None:
+            futures = {executor.submit(lookup_domain_dnschecker, domain, config, csrf_token): domain for domain in domains}
+        elif mode == 'google':
+            futures = {executor.submit(lookup_domain_google, domain, config): domain for domain in domains}
+        else:
+            logger.error(f"Invalid mode: {mode}")
+            return results
         for future in as_completed(futures):
             domain = futures[future]
             try:
