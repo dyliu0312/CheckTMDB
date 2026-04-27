@@ -301,7 +301,9 @@ Examples:
   python host.py                     Run with default categories (tmdb,imdb,thetvdb)
   python host.py -c tmdb             Query only tmdb category
   python host.py -c tmdb,imdb        Query tmdb and imdb categories
-  python host.py -d extended         Use all available categories
+  python host.py -s extended         Use all categories
+  python host.py -d api.tmdb.org     Query a specific domain
+  python host.py -d api.tmdb.org -d tmdb.org   Query multiple specific domains
   python host.py -G                  Append GitHub hosts to output
   python host.py -t 60               Set request timeout to 60 seconds
   python host.py --dry-run           Show configuration without making requests
@@ -309,8 +311,10 @@ Examples:
     )
     parser.add_argument('-c', '--categories', type=str, default=None,
                         help='Comma-separated categories to query (e.g., tmdb,imdb,thetvdb)')
-    parser.add_argument('-d', '--domains', choices=['default', 'extended'], default='default',
+    parser.add_argument('-s', '--domain-set', choices=['default', 'extended'], default='default',
                         help='Preset domain groups: default=(tmdb,imdb,thetvdb), extended=all (default: default)')
+    parser.add_argument('-d', '--domain', type=str, action='append', default=None,
+                        help='Specify a single domain to query (can be used multiple times)')
     parser.add_argument('-G', '--github', action='store_true',
                         help='Append GitHub hosts to output')
     parser.add_argument('-t', '--timeout', type=int, default=30,
@@ -324,36 +328,35 @@ Examples:
 
     config = load_config(args.config)
 
-    # Resolve domains from categories
-    if args.categories:
-        category_names = [c.strip() for c in args.categories.split(',')]
+    # Resolve domain list: --domain takes priority, then --domain-set, then default
+    if args.domain:
+        domain_list = args.domain
+        domain_to_category = {d: "other" for d in domain_list}
     else:
-        category_names = config['domains'].get(args.domains, config['domains']['default'])
-
-    # Build domain -> category mapping and expand category names to actual domain lists
-    domain_to_category = {}
-    domain_list = []
-    for name in category_names:
-        if name in config['domains']['categories']:
-            for d in config['domains']['categories'][name]:
-                if d not in domain_to_category:
-                    domain_to_category[d] = name
-                    domain_list.append(d)
-        else:
-            if name not in domain_to_category:
-                domain_to_category[name] = "other"
-                domain_list.append(name)
+        category_names = config['domains'].get(args.domain_set, config['domains']['default'])
+        domain_to_category = {}
+        domain_list = []
+        for name in category_names:
+            if name in config['domains']['categories']:
+                for d in config['domains']['categories'][name]:
+                    if d not in domain_to_category:
+                        domain_to_category[d] = name
+                        domain_list.append(d)
+            else:
+                if name not in domain_to_category:
+                    domain_to_category[name] = "other"
+                    domain_list.append(name)
 
     if args.dry_run:
         logger.info(f"[DRY RUN] Timeout: {args.timeout}s")
-        logger.info(f"[DRY RUN] Categories: {category_names}")
+        logger.info(f"[DRY RUN] Domain set: {args.domain_set}")
         logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
         logger.info(f"[DRY RUN] Parallelism: dns_workers={config['parallelism']['dns_workers']}, ping_workers={config['parallelism']['ping_workers']}")
         logger.info("[DRY RUN] Dry run complete, no requests made")
         return
 
     logger.info("Starting TMDB domain check (Google DNS mode)")
-    logger.info(f"Processing {len(domain_list)} domains from categories: {category_names}")
+    logger.info(f"Processing {len(domain_list)} domains: {domain_list}")
 
     # Lookup all domains in parallel (Google DNS mode)
     lookup_results = lookup_all_domains(domain_list, config, args.timeout)
