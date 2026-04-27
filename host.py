@@ -64,19 +64,41 @@ TMDB_HOST_TEMPLATE = """# Tmdb Hosts Start
 
 
 def validate_ip(ip: str) -> bool:
-    """Validate IP address (IPv4 or IPv6)."""
+    """Validate IP address (IPv4 or IPv6), excluding private/reserved IPs."""
+    # IPv4 pattern
     ipv4_pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    # IPv6 pattern
     ipv6_pattern = r'^(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$'
-    return bool(re.match(ipv4_pattern, ip) or re.match(ipv6_pattern, ip, re.IGNORECASE))
+    
+    if not (re.match(ipv4_pattern, ip) or re.match(ipv6_pattern, ip, re.IGNORECASE)):
+        return False
+    
+    # Filter out private/reserved IPv4
+    if ip.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.',
+                     '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+                     '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+                     '172.30.', '172.31.', '192.168.', '127.', '0.', '169.254.',
+                     '255.', '224.', '240.')):
+        return False
+    
+    return True
 
 
-def ping_ip(ip: str, port: int = 80, timeout: float = 2.0) -> float:
-    """Ping an IP address and return latency in milliseconds."""
+def ping_ip(ip: str, timeout: float = 2.0) -> float:
+    """Ping an IP address and return median latency of 3 attempts (in milliseconds)."""
     try:
-        start_time = time.time()
-        with socket.create_connection((ip, port), timeout=timeout) as sock:
-            latency = (time.time() - start_time) * 1000
-            return latency
+        from ping3 import ping, verbose
+        times = []
+        for _ in range(3):
+            result = ping(ip, timeout=timeout)
+            if result is not None:
+                times.append(result * 1000)  # Convert to ms
+        
+        if not times:
+            return float('inf')
+        
+        # Return median (middle value after sorting)
+        return sorted(times)[len(times) // 2]
     except Exception as e:
         logger.debug(f"Ping {ip} failed: {e}")
         return float('inf')
@@ -87,7 +109,7 @@ def find_fastest_ip(ips: list, ping_workers: int = 10, between_ips_delay: float 
     if not ips:
         return None
 
-    valid_ips = [ip.strip() for ip in ips if ip.strip()]
+    valid_ips = [ip.strip() for ip in ips if ip.strip() and validate_ip(ip)]
     if not valid_ips:
         return None
 
@@ -98,7 +120,8 @@ def find_fastest_ip(ips: list, ping_workers: int = 10, between_ips_delay: float 
         for future in as_completed(futures):
             ip = futures[future]
             latency = future.result()
-            ip_latencies.append((ip, latency))
+            if latency < float('inf'):
+                ip_latencies.append((ip, latency))
             time.sleep(between_ips_delay)
 
     if not ip_latencies:

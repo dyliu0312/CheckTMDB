@@ -58,11 +58,11 @@ python host.py [选项]
 **选项：**
 | 参数 | 说明 |
 |------|------|
-| `--mode {dnschecker,google}` | DNS 查询模式（默认：dnschecker） |
 | `--categories CATEGORIES` | 指定分类，用逗号分隔（如 `tmdb,imdb,thetvdb`） |
 | `--domains {default,extended}` | 预设域名组合（默认：default） |
 | `-G, --github` | 追加 GitHub hosts 到输出 |
 | `--dry-run` | 仅显示配置，不发起请求 |
+| `--timeout TIMEOUT` | 请求超时秒数（默认：30） |
 | `--config CONFIG` | 指定配置文件路径 |
 
 **域名分类：**
@@ -85,9 +85,6 @@ python host.py --domains=extended
 # 仅查询 tmdb 和 thetvdb
 python host.py --categories=tmdb,thetvdb
 
-# 使用 Google DNS 模式
-python host.py --mode=google
-
 # 追加 GitHub hosts
 python host.py -G
 
@@ -98,3 +95,4 @@ python host.py --dry-run
 ## 致谢
 
 - 上游项目：[cnwikee/CheckTMDB](https://github.com/cnwikee/CheckTMDB/)
+- DNS 查询及 Ping 优化参考：[GitHub520](https://github.com/521xueweihan/GitHub520)
