@@ -50,7 +50,7 @@ def run_test():
         [sys.executable, "host.py", "--mode=google", "--categories=tmdb,thetvdb"],
         capture_output=True,
         text=True,
-        timeout=180
+        timeout=10
     )
 
     # Note: We don't fail the test if script fails due to network
