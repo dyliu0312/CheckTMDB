@@ -59,7 +59,7 @@ python host.py [选项]
 | 参数 | 说明 |
 |------|------|
 | `--categories CATEGORIES` | 指定分类，用逗号分隔（如 `tmdb,imdb,thetvdb`） |
-| `--domains {default,extended}` | 预设域名组合（默认：default） |
+| `--domains {{default,extended}}` | 预设域名组合（默认：default） |
 | `-G, --github` | 追加 GitHub hosts 到输出 |
 | `--dry-run` | 仅显示配置，不发起请求 |
 | `--timeout TIMEOUT` | 请求超时秒数（默认：30） |
