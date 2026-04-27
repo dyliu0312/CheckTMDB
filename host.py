@@ -337,6 +337,7 @@ Examples:
     lookup_results = lookup_all_domains(domain_list, config, args.timeout)
 
     ipv4_results = []
+    failed_domains = []
 
     ping_workers = config['parallelism']['ping_workers']
     between_ips_delay = config['rate_limiting']['between_ips_delay']
@@ -346,13 +347,16 @@ Examples:
 
         if not ipv4_ips:
             logger.warning(f"No IPs found for {domain}, skipping")
+            failed_domains.append(domain)
             continue
 
-        if ipv4_ips:
-            fastest_ipv4 = find_fastest_ip(ipv4_ips, ping_workers, between_ips_delay)
-            if fastest_ipv4:
-                ipv4_results.append((fastest_ipv4, domain))
-                logger.info(f"Domain {domain} fastest IPv4: {fastest_ipv4}")
+        fastest_ipv4 = find_fastest_ip(ipv4_ips, ping_workers, between_ips_delay)
+        if fastest_ipv4:
+            ipv4_results.append((fastest_ipv4, domain))
+            logger.info(f"Domain {domain} fastest IPv4: {fastest_ipv4}")
+        else:
+            logger.warning(f"All ping failed for {domain}, skipping")
+            failed_domains.append(domain)
 
         time.sleep(config['rate_limiting']['between_domains_delay'])
 
@@ -383,7 +387,8 @@ Examples:
 
     write_file(ipv4_hosts_content, args.github, config)
 
-    logger.info("Done!")
+    logger.info(f"Done! {len(ipv4_results)} succeeded, {len(failed_domains)} failed" +
+                (f" ({', '.join(failed_domains)})" if failed_domains else ""))
 
 
 if __name__ == "__main__":
