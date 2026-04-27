@@ -279,10 +279,24 @@ Examples:
 
     config = load_config(args.config)
 
-    # Resolve domain list: --domain takes priority, then --domain-set, then default
+    # Resolve domain list: --domain takes highest priority, then --categories, then --domain-set
     if args.domain:
         domain_list = args.domain
         domain_to_category = {d: "other" for d in domain_list}
+    elif args.categories:
+        category_names = [c.strip() for c in args.categories.split(',')]
+        domain_to_category = {}
+        domain_list = []
+        for name in category_names:
+            if name in config['domains']['categories']:
+                for d in config['domains']['categories'][name]:
+                    if d not in domain_to_category:
+                        domain_to_category[d] = name
+                        domain_list.append(d)
+            else:
+                if name not in domain_to_category:
+                    domain_to_category[name] = "other"
+                    domain_list.append(name)
     else:
         category_names = config['domains'].get(args.domain_set, config['domains']['default'])
         domain_to_category = {}
@@ -300,14 +314,24 @@ Examples:
 
     if args.dry_run:
         logger.info(f"[DRY RUN] Timeout: {args.timeout}s")
-        logger.info(f"[DRY RUN] Domain set: {args.domain_set}")
+        if args.domain:
+            logger.info(f"[DRY RUN] Mode: specific domains")
+        elif args.categories:
+            logger.info(f"[DRY RUN] Mode: categories ({args.categories})")
+        else:
+            logger.info(f"[DRY RUN] Mode: domain-set ({args.domain_set})")
         logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
         logger.info(f"[DRY RUN] Parallelism: dns_workers={config['parallelism']['dns_workers']}, ping_workers={config['parallelism']['ping_workers']}")
         logger.info("[DRY RUN] Dry run complete, no requests made")
         return
 
     logger.info("Starting TMDB domain check (Google DNS mode)")
-    logger.info(f"Processing {len(domain_list)} domains: {domain_list}")
+    if args.domain:
+        logger.info(f"Mode: specific domains, {len(domain_list)} domains: {domain_list}")
+    elif args.categories:
+        logger.info(f"Mode: categories ({args.categories}), {len(domain_list)} domains: {domain_list}")
+    else:
+        logger.info(f"Mode: domain-set ({args.domain_set}), {len(domain_list)} domains: {domain_list}")
 
     # Lookup all domains in parallel (Google DNS mode)
     lookup_results = lookup_all_domains(domain_list, config, args.timeout)
