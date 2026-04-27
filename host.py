@@ -201,58 +201,9 @@ def get_github_hosts(config: dict) -> Optional[str]:
     return None
 
 
-def write_file(ipv4_hosts_content: str, update_time: str, github_append: bool = False, config: dict|None = None) -> bool:
-    """Write hosts content to files."""
-    output_doc_path = os.path.join(os.path.dirname(__file__), "README.md")
-    template_path = os.path.join(os.path.dirname(__file__), "README_template.md")
-
-    # If README.md doesn't exist, generate from template
-    if not os.path.exists(output_doc_path):
-        logger.info("README.md not found, generating from template")
-        with open(template_path, "r", encoding='utf-8') as f:
-            template_str = f.read()
-        # Generate with empty content placeholders
-        hosts_content = template_str.format(
-            ipv4_hosts_str="# (IPv4 hosts will be generated on next run)",
-            update_time=update_time
-        )
-        with open(output_doc_path, "w", encoding='utf-8') as f:
-            f.write(hosts_content)
-        logger.info("README.md generated from template")
-
-    with open(output_doc_path, "r", encoding='utf-8') as f:
-        old_readme_md_content = f.read()
-
-    if not old_readme_md_content:
-        logger.error("README.md is empty")
-        return False
-
-    old_ipv4_block = old_readme_md_content.split("```bash")[1].split("```")[0].strip()
-    old_ipv4_hosts = old_ipv4_block.split("# Update time:")[0].strip()
-
-    # Process IPv4
-    if ipv4_hosts_content:
-        new_ipv4_hosts = ipv4_hosts_content.split("# Update time:")[0].strip()
-        if old_ipv4_hosts == new_ipv4_hosts:
-            logger.info("IPv4 host not changed")
-            w_ipv4_block = old_ipv4_block
-        else:
-            w_ipv4_block = ipv4_hosts_content
-            write_host_file(ipv4_hosts_content, github_append, config)
-    else:
-        w_ipv4_block = old_ipv4_block
-
-    with open(template_path, "r", encoding='utf-8') as f:
-        template_str = f.read()
-
-    hosts_content = template_str.format(
-        ipv4_hosts_str=w_ipv4_block,
-        update_time=update_time
-    )
-
-    with open(output_doc_path, "w", encoding='utf-8') as f:
-        f.write(hosts_content)
-
+def write_file(ipv4_hosts_content: str, github_append: bool = False, config: dict|None = None) -> bool:
+    """Write hosts content to tmdb-hosts file."""
+    write_host_file(ipv4_hosts_content, github_append, config)
     return True
 
 
@@ -406,7 +357,7 @@ Examples:
         update_time=update_time
     ) if ipv4_results else ""
 
-    write_file(ipv4_hosts_content, update_time, args.github, config)
+    write_file(ipv4_hosts_content, args.github, config)
 
     logger.info("Done!")
 

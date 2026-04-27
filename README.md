@@ -20,7 +20,7 @@ python host.py [选项]
 | 参数 | 说明 |
 |------|------|
 | `-c, --categories CATEGORIES` | 指定分类，用逗号分隔（如 `tmdb,imdb,thetvdb`） |
-| `-s, --domain-set {default,extended}` | 预设域名组合（默认为 default: tmdb + imdb + thetvdb） |
+| `-s, --domain-set SET` | 预设域名组合（默认为 default: tmdb + imdb + thetvdb） |
 | `-d, --domain DOMAIN` | 指定单个域名（可多次使用） |
 | `-G, --github` | 追加 GitHub hosts 到输出 |
 | `-t, --timeout TIMEOUT` | 请求超时秒数（默认：30） |
