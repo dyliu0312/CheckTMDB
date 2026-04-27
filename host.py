@@ -344,11 +344,9 @@ def main():
                 domain_list.append(name)
 
     if args.dry_run:
-        
         logger.info(f"[DRY RUN] Timeout: {args.timeout}s")
         logger.info(f"[DRY RUN] Categories: {category_names}")
         logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
-        logger.info(f"[DRY RUN] Country code: {config['country_code']}")
         logger.info(f"[DRY RUN] Parallelism: dns_workers={config['parallelism']['dns_workers']}, ping_workers={config['parallelism']['ping_workers']}")
         logger.info("[DRY RUN] Dry run complete, no requests made")
         return

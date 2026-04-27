@@ -1,6 +1,4 @@
 {
-  "country_code": "jp",
-  "dns_mode": "dnschecker",
   "domains": {
     "categories": {
       "tmdb": [
@@ -53,8 +51,7 @@
     "jitter": true
   },
   "ping": {
-    "timeout": 2.0,
-    "port": 80
+    "timeout": 2.0
   },
   "rate_limiting": {
     "between_domains_delay": 1.0,
@@ -65,11 +62,6 @@
     "ping_workers": 10
   },
   "apis": {
-    "dnschecker": {
-      "base_url": "https://dnschecker.org",
-      "csrf_url": "https://dnschecker.org/ajax_files/gen_csrf.php",
-      "api_url": "https://dnschecker.org/ajax_files/api/220"
-    },
     "google": {
       "base_url": "https://dns.google/resolve"
     },
