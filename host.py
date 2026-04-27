@@ -120,8 +120,11 @@ def get_csrf_token(udp: float, config: dict) -> Optional[str]:
     csrf_url = config['apis']['dnschecker']['csrf_url']
     country_code = config['country_code']
     headers = {
+        'accept': 'application/json, text/javascript, */*; q=0.01',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
         'referer': f'https://dnschecker.org/country/{country_code}/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+        'x-requested-with': 'XMLHttpRequest'
     }
 
     response = requests.get(f"{csrf_url}?udp={udp}", headers=headers)
@@ -139,9 +142,12 @@ def dnschecker_lookup(domain: str, csrf_token: str, udp: float, record_type: str
 
     url = f"{api_url}/{argument}/{domain}?dns_key=country&dns_value={country_code}&v=0.36&cd_flag=1&upd={udp}"
     headers = {
+        'accept': 'application/json, text/javascript, */*; q=0.01',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
         'csrftoken': csrf_token,
         'referer': f'https://dnschecker.org/country/{country_code}/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+        'x-requested-with': 'XMLHttpRequest'
     }
 
     response = requests.get(url, headers=headers)
