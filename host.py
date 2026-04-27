@@ -87,7 +87,7 @@ def validate_ip(ip: str) -> bool:
 def ping_ip(ip: str, timeout: float = 2.0) -> float:
     """Ping an IP address and return median latency of 3 attempts (in milliseconds)."""
     try:
-        from ping3 import ping, verbose
+        from ping3 import ping
         times = []
         for _ in range(3):
             result = ping(ip, timeout=timeout)
