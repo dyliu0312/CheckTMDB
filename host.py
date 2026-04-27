@@ -175,7 +175,7 @@ def lookup_domain_dnschecker(domain: str, config: dict, csrf_token: str|None = N
 
 # Google DNS mode functions
 @retry_with_backoff(max_tries=3, base_delay=1.0)
-def google_lookup(domain: str, record_type: str) -> list:
+def google_lookup(domain: str, record_type: str, timeout: int = 30) -> list:
     """Lookup domain IPs using Google DNS API."""
     logger.info(f"Looking up {domain} via Google DNS ({record_type})")
 
@@ -191,7 +191,7 @@ def google_lookup(domain: str, record_type: str) -> list:
 
     all_ips = []
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=params, timeout=timeout)
         response.raise_for_status()
         data = response.json()
 
@@ -212,11 +212,11 @@ def google_lookup(domain: str, record_type: str) -> list:
     return all_ips
 
 
-def lookup_domain_google(domain: str, config: dict) -> tuple:
+def lookup_domain_google(domain: str, config: dict, timeout: int = 30) -> tuple:
     """Lookup both IPv4 and IPv6 for a domain using Google DNS."""
-    ipv4_ips = google_lookup(domain, "A")
+    ipv4_ips = google_lookup(domain, "A", timeout)
     time.sleep(config['rate_limiting']['between_domains_delay'])
-    ipv6_ips = google_lookup(domain, "AAAA")
+    ipv6_ips = google_lookup(domain, "AAAA", timeout)
     return domain, ipv4_ips, ipv6_ips
 
 
@@ -320,7 +320,7 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     logger.info(f"Updated {log_name}")
 
 
-def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str|None = None, udp: float|None = None) -> dict:
+def lookup_all_domains(domains: list, mode: str, config: dict, timeout: int = 30, csrf_token: str|None = None, udp: float|None = None) -> dict:
     """Look up all domains in parallel."""
     dns_workers = config['parallelism']['dns_workers']
 
@@ -329,7 +329,7 @@ def lookup_all_domains(domains: list, mode: str, config: dict, csrf_token: str|N
         if mode == 'dnschecker' and csrf_token is not None and udp is not None:
             futures = {executor.submit(lookup_domain_dnschecker, domain, config, csrf_token): domain for domain in domains}
         elif mode == 'google':
-            futures = {executor.submit(lookup_domain_google, domain, config): domain for domain in domains}
+            futures = {executor.submit(lookup_domain_google, domain, config, timeout): domain for domain in domains}
         else:
             logger.error(f"Invalid mode: {mode}")
             return results
@@ -360,6 +360,8 @@ def main():
                         help='Comma-separated categories to use (e.g., tmdb,imdb,thetvdb)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Show configuration without making requests')
+    parser.add_argument('--timeout', type=int, default=30,
+                        help='Request timeout in seconds (default: 30)')
 
     args = parser.parse_args()
 
@@ -387,6 +389,7 @@ def main():
 
     if args.dry_run:
         logger.info(f"[DRY RUN] Mode: {args.mode}")
+        logger.info(f"[DRY RUN] Timeout: {args.timeout}s")
         logger.info(f"[DRY RUN] Categories: {category_names}")
         logger.info(f"[DRY RUN] Domains ({len(domain_list)}): {domain_list}")
         logger.info(f"[DRY RUN] Country code: {config['country_code']}")
@@ -409,7 +412,7 @@ def main():
         logger.info("CSRF token obtained, will reuse for all domains")
 
     # Lookup all domains in parallel
-    lookup_results = lookup_all_domains(domain_list, args.mode, config, csrf_token, udp)
+    lookup_results = lookup_all_domains(domain_list, args.mode, config, args.timeout, csrf_token, udp)
 
     ipv4_results = []
     ipv6_results = []
