@@ -7,7 +7,6 @@
 ## 文件地址
 
 - TMDB IPv4 hosts：[tmdb-hosts](https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/tmdb-hosts)
-- TMDB IPv6 hosts：[tmdb-hosts-v6](https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/tmdb-hosts-v6)
 
 ## 使用方法
 
@@ -18,11 +17,6 @@
 **IPv4：**
 ```bash
 {ipv4_hosts_str}
-```
-
-**IPv6：**
-```bash
-{ipv6_hosts_str}
 ```
 
 > [!NOTE]
@@ -46,7 +40,6 @@ hosts 文件位置：
 1. 安装 [SwitchHosts](https://github.com/oldj/SwitchHosts/releases/latest)
 2. 添加远程 hosts：
    - IPv4：`https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/tmdb-hosts`
-   - IPv6：`https://raw.githubusercontent.com/dyliu0312/CheckTMDB/refs/heads/main/tmdb-hosts-v6`
 3. 设置自动刷新：`1 小时`
 
 ## 命令行参数

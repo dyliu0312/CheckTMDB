@@ -4,7 +4,7 @@ import logging
 import os
 import random
 import re
-import socket
+import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -64,15 +64,12 @@ TMDB_HOST_TEMPLATE = """# Tmdb Hosts Start
 
 
 def validate_ip(ip: str) -> bool:
-    """Validate IP address (IPv4 or IPv6), excluding private/reserved IPs."""
-    # IPv4 pattern
+    """Validate IPv4 address, excluding private/reserved IPs."""
     ipv4_pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-    # IPv6 pattern
-    ipv6_pattern = r'^(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$'
-    
-    if not (re.match(ipv4_pattern, ip) or re.match(ipv6_pattern, ip, re.IGNORECASE)):
+
+    if not re.match(ipv4_pattern, ip):
         return False
-    
+
     # Filter out private/reserved IPv4
     if ip.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.',
                      '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
@@ -80,30 +77,20 @@ def validate_ip(ip: str) -> bool:
                      '172.30.', '172.31.', '192.168.', '127.', '0.', '169.254.',
                      '255.', '224.', '240.')):
         return False
-    
+
     return True
 
-
-import subprocess
 
 def ping_ip(ip: str, timeout: float = 2.0) -> float:
     """Ping an IP address and return median latency of 3 attempts (in milliseconds)."""
     try:
         times = []
         for _ in range(3):
-            # Use system ping command (works in containers)
-            if ':' in ip:  # IPv6
-                cmd = ['ping', '-6', '-n', '-W', str(int(timeout)), '-c', '1', ip]
-            else:  # IPv4
-                cmd = ['ping', '-4', '-n', '-W', str(int(timeout)), '-c', '1', ip]
-
+            cmd = ['ping', '-4', '-n', '-W', str(int(timeout)), '-c', '1', ip]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 1)
 
-            # Parse latency from output (Linux format: "time=12.3 ms")
             for line in result.stdout.split('\n'):
                 if 'time=' in line:
-                    # Handle both "time=12.3 ms" and "time=12.3" formats
-                    import re
                     match = re.search(r'time[=<](\d+\.?\d*)', line)
                     if match:
                         times.append(float(match.group(1)))
@@ -150,7 +137,6 @@ def find_fastest_ip(ips: list, ping_workers: int = 10, between_ips_delay: float 
     return fastest[0]
 
 
-
 # Google DNS mode functions
 @retry_with_backoff(max_tries=3, base_delay=1.0)
 def google_lookup(domain: str, record_type: str, timeout: int = 30) -> list:
@@ -191,11 +177,9 @@ def google_lookup(domain: str, record_type: str, timeout: int = 30) -> list:
 
 
 def lookup_domain_google(domain: str, config: dict, timeout: int = 30) -> tuple:
-    """Lookup both IPv4 and IPv6 for a domain using Google DNS."""
+    """Lookup IPv4 for a domain using Google DNS."""
     ipv4_ips = google_lookup(domain, "A", timeout)
-    time.sleep(config['rate_limiting']['between_domains_delay'])
-    ipv6_ips = google_lookup(domain, "AAAA", timeout)
-    return domain, ipv4_ips, ipv6_ips
+    return domain, ipv4_ips
 
 
 def get_github_hosts(config: dict) -> Optional[str]:
@@ -217,7 +201,7 @@ def get_github_hosts(config: dict) -> Optional[str]:
     return None
 
 
-def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: str, github_append: bool = False, config: dict|None = None) -> bool:
+def write_file(ipv4_hosts_content: str, update_time: str, github_append: bool = False, config: dict|None = None) -> bool:
     """Write hosts content to files."""
     output_doc_path = os.path.join(os.path.dirname(__file__), "README.md")
     template_path = os.path.join(os.path.dirname(__file__), "README_template.md")
@@ -230,7 +214,6 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
         # Generate with empty content placeholders
         hosts_content = template_str.format(
             ipv4_hosts_str="# (IPv4 hosts will be generated on next run)",
-            ipv6_hosts_str="# (IPv6 hosts will be generated on next run)",
             update_time=update_time
         )
         with open(output_doc_path, "w", encoding='utf-8') as f:
@@ -246,8 +229,6 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
 
     old_ipv4_block = old_readme_md_content.split("```bash")[1].split("```")[0].strip()
     old_ipv4_hosts = old_ipv4_block.split("# Update time:")[0].strip()
-    old_ipv6_block = old_readme_md_content.split("```bash")[2].split("```")[0].strip()
-    old_ipv6_hosts = old_ipv6_block.split("# Update time:")[0].strip()
 
     # Process IPv4
     if ipv4_hosts_content:
@@ -257,28 +238,15 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
             w_ipv4_block = old_ipv4_block
         else:
             w_ipv4_block = ipv4_hosts_content
-            write_host_file(ipv4_hosts_content, 'ipv4', github_append, config)
+            write_host_file(ipv4_hosts_content, github_append, config)
     else:
         w_ipv4_block = old_ipv4_block
-
-    # Process IPv6
-    if ipv6_hosts_content:
-        new_ipv6_hosts = ipv6_hosts_content.split("# Update time:")[0].strip()
-        if old_ipv6_hosts == new_ipv6_hosts:
-            logger.info("IPv6 host not changed")
-            w_ipv6_block = old_ipv6_block
-        else:
-            w_ipv6_block = ipv6_hosts_content
-            write_host_file(ipv6_hosts_content, 'ipv6', github_append, config)
-    else:
-        w_ipv6_block = old_ipv6_block
 
     with open(template_path, "r", encoding='utf-8') as f:
         template_str = f.read()
 
     hosts_content = template_str.format(
         ipv4_hosts_str=w_ipv4_block,
-        ipv6_hosts_str=w_ipv6_block,
         update_time=update_time
     )
 
@@ -288,14 +256,9 @@ def write_file(ipv4_hosts_content: str, ipv6_hosts_content: str, update_time: st
     return True
 
 
-def write_host_file(hosts_content: str, filename: str, github_append: bool = False, config: dict|None = None) -> None:
-    """Write hosts content to tmdb-hosts or tmdb-hosts-v6 file."""
-    if filename == 'ipv4':
-        output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts")
-        log_name = "tmdb-hosts"
-    else:
-        output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts-v6")
-        log_name = "tmdb-hosts-v6"
+def write_host_file(hosts_content: str, github_append: bool = False, config: dict|None = None) -> None:
+    """Write hosts content to tmdb-hosts file."""
+    output_file_path = os.path.join(os.path.dirname(__file__), "tmdb-hosts")
 
     if github_append and config is not None:
         logger.info("Appending GitHub hosts")
@@ -306,7 +269,7 @@ def write_host_file(hosts_content: str, filename: str, github_append: bool = Fal
     with open(output_file_path, "w", encoding='utf-8') as f:
         f.write(hosts_content)
 
-    logger.info(f"Updated {log_name}")
+    logger.info("Updated tmdb-hosts")
 
 
 def lookup_all_domains(domains: list, config: dict, timeout: int = 30) -> dict:
@@ -319,12 +282,12 @@ def lookup_all_domains(domains: list, config: dict, timeout: int = 30) -> dict:
         for future in as_completed(futures):
             domain = futures[future]
             try:
-                d, ipv4, ipv6 = future.result()
-                results[d] = {'ipv4': ipv4, 'ipv6': ipv6}
-                logger.info(f"Completed {d}: IPv4={len(ipv4)}, IPv6={len(ipv6)}")
+                d, ipv4 = future.result()
+                results[d] = {'ipv4': ipv4}
+                logger.info(f"Completed {d}: IPv4={len(ipv4)}")
             except Exception as e:
                 logger.error(f"Failed to lookup {domain}: {e}")
-                results[domain] = {'ipv4': [], 'ipv6': []}
+                results[domain] = {'ipv4': []}
 
     return results
 
@@ -383,16 +346,14 @@ def main():
     lookup_results = lookup_all_domains(domain_list, config, args.timeout)
 
     ipv4_results = []
-    ipv6_results = []
 
     ping_workers = config['parallelism']['ping_workers']
     between_ips_delay = config['rate_limiting']['between_ips_delay']
 
     for domain, ips in lookup_results.items():
         ipv4_ips = ips['ipv4']
-        ipv6_ips = ips['ipv6']
 
-        if not ipv4_ips and not ipv6_ips:
+        if not ipv4_ips:
             logger.warning(f"No IPs found for {domain}, skipping")
             continue
 
@@ -402,15 +363,9 @@ def main():
                 ipv4_results.append((fastest_ipv4, domain))
                 logger.info(f"Domain {domain} fastest IPv4: {fastest_ipv4}")
 
-        if ipv6_ips:
-            fastest_ipv6 = find_fastest_ip(ipv6_ips, ping_workers, between_ips_delay)
-            if fastest_ipv6:
-                ipv6_results.append((fastest_ipv6, domain))
-                logger.info(f"Domain {domain} fastest IPv6: {fastest_ipv6}")
-
         time.sleep(config['rate_limiting']['between_domains_delay'])
 
-    if not ipv4_results and not ipv6_results:
+    if not ipv4_results:
         logger.error("No results obtained, exiting")
         sys.exit(1)
 
@@ -435,12 +390,7 @@ def main():
         update_time=update_time
     ) if ipv4_results else ""
 
-    ipv6_hosts_content = TMDB_HOST_TEMPLATE.format(
-        content=build_grouped_content(ipv6_results, 50),
-        update_time=update_time
-    ) if ipv6_results else ""
-
-    write_file(ipv4_hosts_content, ipv6_hosts_content, update_time, args.github, config)
+    write_file(ipv4_hosts_content, update_time, args.github, config)
 
     logger.info("Done!")
 
