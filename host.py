@@ -4,7 +4,7 @@ import logging
 import os
 import random
 import re
-import subprocess
+import socket
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -82,26 +82,29 @@ def validate_ip(ip: str) -> bool:
 
 
 def ping_ip(ip: str, timeout: float = 2.0) -> float:
-    """Ping an IP address and return median latency of 3 attempts (in milliseconds)."""
+    """Test TCP connection latency to IP port 80, return median of 3 attempts (in ms)."""
+    import socket
     try:
         times = []
         for _ in range(3):
-            cmd = ['ping', '-4', '-n', '-W', str(int(timeout)), '-c', '1', ip]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 1)
-
-            for line in result.stdout.split('\n'):
-                if 'time=' in line:
-                    match = re.search(r'time[=<](\d+\.?\d*)', line)
-                    if match:
-                        times.append(float(match.group(1)))
-                    break
+            start = time.time()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(timeout)
+            try:
+                sock.connect((ip, 80))
+                sock.close()
+                times.append((time.time() - start) * 1000)
+            except (socket.timeout, socket.error):
+                pass
+            finally:
+                sock.close()
 
         if not times:
             return float('inf')
 
         return sorted(times)[len(times) // 2]
     except Exception as e:
-        logger.debug(f"Ping {ip} failed: {e}")
+        logger.debug(f"TCP connect {ip} failed: {e}")
         return float('inf')
 
 
