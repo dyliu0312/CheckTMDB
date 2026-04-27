@@ -371,16 +371,21 @@ Examples:
 
     # Group results by category
     def build_grouped_content(results, ip_width):
-        lines = []
-        current_category = None
+        from collections import OrderedDict
+        categories = OrderedDict()
         for ip, domain in results:
             cat = domain_to_category.get(domain, "other")
-            if cat != current_category:
-                if current_category is not None:
-                    lines.append("")
-                lines.append(f"# === {cat.upper()} ===")
-                current_category = cat
-            lines.append(f"{ip:<{ip_width}} {domain}")
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append((ip, domain))
+
+        lines = []
+        for cat, items in categories.items():
+            if lines:
+                lines.append("")
+            lines.append(f"# === {cat.upper()} ===")
+            for ip, domain in items:
+                lines.append(f"{ip:<{ip_width}} {domain}")
         return "\n".join(lines)
 
     ipv4_hosts_content = TMDB_HOST_TEMPLATE.format(
