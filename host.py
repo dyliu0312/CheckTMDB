@@ -293,19 +293,32 @@ def lookup_all_domains(domains: list, config: dict, timeout: int = 30) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Check TMDB domains and find fastest IPs')
-    parser.add_argument('--config', type=str, default=None,
-                        help='Path to config.json (default: ./config.json)')
+    parser = argparse.ArgumentParser(
+        description='Check TMDB domains and find fastest IPs via Google DNS',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python host.py                     Run with default categories (tmdb,imdb,thetvdb)
+  python host.py -c tmdb             Query only tmdb category
+  python host.py -c tmdb,imdb        Query tmdb and imdb categories
+  python host.py -d extended         Use all available categories
+  python host.py -G                  Append GitHub hosts to output
+  python host.py -t 60               Set request timeout to 60 seconds
+  python host.py --dry-run           Show configuration without making requests
+        """
+    )
+    parser.add_argument('-c', '--categories', type=str, default=None,
+                        help='Comma-separated categories to query (e.g., tmdb,imdb,thetvdb)')
+    parser.add_argument('-d', '--domains', choices=['default', 'extended'], default='default',
+                        help='Preset domain groups: default=(tmdb,imdb,thetvdb), extended=all (default: default)')
     parser.add_argument('-G', '--github', action='store_true',
                         help='Append GitHub hosts to output')
-    parser.add_argument('--domains', choices=['default', 'extended'], default='default',
-                        help='Domain set to use (default: default)')
-    parser.add_argument('--categories', type=str, default=None,
-                        help='Comma-separated categories to use (e.g., tmdb,imdb,thetvdb)')
+    parser.add_argument('-t', '--timeout', type=int, default=30,
+                        help='Request timeout in seconds (default: 30)')
+    parser.add_argument('-C', '--config', type=str, default=None,
+                        help='Path to config.json (default: ./config.json)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Show configuration without making requests')
-    parser.add_argument('--timeout', type=int, default=30,
-                        help='Request timeout in seconds (default: 30)')
 
     args = parser.parse_args()
 
