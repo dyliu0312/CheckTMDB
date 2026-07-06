@@ -1,30 +1,30 @@
 # Tmdb Hosts Start
 # === TMDB ===
-18.244.214.79               api.themoviedb.org
-65.8.54.49                  themoviedb.org
-65.8.54.69                  files.tmdb.org
-18.155.192.19               tmdb.org
-52.85.151.110               api.tmdb.org
-65.8.54.76                  www.themoviedb.org
-18.155.192.128              auth.themoviedb.org
-143.244.50.211              image.tmdb.org
+18.161.156.114              api.tmdb.org
+18.161.156.92               api.themoviedb.org
+52.222.205.23               files.tmdb.org
+52.222.205.52               themoviedb.org
+18.238.132.31               tmdb.org
+52.222.205.102              www.themoviedb.org
+169.150.249.163             image.tmdb.org
 143.244.50.212              images.tmdb.org
+108.138.167.123             auth.themoviedb.org
 
 # === IMDB ===
 98.82.155.134               imdb.com
-18.155.187.37               www.imdb.com
-18.155.187.37               secure.imdb.com
-98.82.158.179               us.dd.imdb.com
-18.155.187.37               www.imdb.to
-3.168.80.7                  ia.media-imdb.com
-151.101.65.16               f.media-amazon.com
+98.82.155.134               us.dd.imdb.com
+18.154.215.49               www.imdb.com
+18.154.215.49               www.imdb.to
+18.154.215.49               s.media-imdb.com
+18.154.215.49               secure.imdb.com
 98.82.155.134               origin-www.imdb.com
-18.155.187.37               s.media-imdb.com
-18.238.192.52               imdb-video.media-imdb.com
+151.101.1.16                f.media-amazon.com
+52.84.217.17                imdb-video.media-imdb.com
+52.84.192.152               ia.media-imdb.com
 
 # === THETVDB ===
-13.249.76.81                thetvdb.com
-108.139.0.92                api.thetvdb.com
-18.155.198.86               artworks.thetvdb.com
-# Update time: 2026-07-06T07:05:48+08:00
+13.225.70.80                thetvdb.com
+13.225.228.87               api.thetvdb.com
+18.238.130.85               artworks.thetvdb.com
+# Update time: 2026-07-06T21:52:59+08:00
 # Tmdb Hosts End
