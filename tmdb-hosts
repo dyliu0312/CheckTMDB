@@ -1,30 +1,30 @@
 # Tmdb Hosts Start
 # === TMDB ===
-18.155.173.7                api.tmdb.org
-65.8.20.119                 api.themoviedb.org
-18.238.96.106               tmdb.org
-18.238.109.13               files.tmdb.org
-18.155.173.80               themoviedb.org
+18.238.238.127              api.themoviedb.org
+143.204.160.22              files.tmdb.org
+143.204.160.79              api.tmdb.org
+3.163.175.48                themoviedb.org
+52.85.129.63                tmdb.org
+3.163.175.48                www.themoviedb.org
 143.244.50.82               image.tmdb.org
-18.155.173.32               www.themoviedb.org
-18.238.96.88                auth.themoviedb.org
-143.244.50.89               images.tmdb.org
+143.244.50.212              images.tmdb.org
+3.163.175.92                auth.themoviedb.org
 
 # === IMDB ===
 98.82.155.134               imdb.com
-18.155.175.50               www.imdb.com
-18.155.175.50               secure.imdb.com
-98.82.158.179               us.dd.imdb.com
-18.155.175.50               s.media-imdb.com
-18.155.175.50               www.imdb.to
-98.82.155.134               origin-www.imdb.com
-65.8.193.164                ia.media-imdb.com
-151.101.1.16                f.media-amazon.com
-65.8.20.63                  imdb-video.media-imdb.com
+108.138.97.184              www.imdb.com
+108.138.97.184              secure.imdb.com
+98.82.155.134               us.dd.imdb.com
+44.215.137.99               origin-www.imdb.com
+108.138.97.184              s.media-imdb.com
+151.101.129.16              f.media-amazon.com
+52.85.129.102               imdb-video.media-imdb.com
+143.204.159.162             ia.media-imdb.com
+108.138.97.184              www.imdb.to
 
 # === THETVDB ===
-65.8.197.76                 thetvdb.com
-65.8.197.76                 api.thetvdb.com
-18.238.91.71                artworks.thetvdb.com
-# Update time: 2026-07-18T06:54:04+08:00
+52.85.138.81                thetvdb.com
+52.85.138.81                api.thetvdb.com
+52.85.138.63                artworks.thetvdb.com
+# Update time: 2026-07-18T19:08:16+08:00
 # Tmdb Hosts End
