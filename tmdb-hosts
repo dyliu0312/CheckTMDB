@@ -1,30 +1,30 @@
 # Tmdb Hosts Start
 # === TMDB ===
+3.171.38.81                 themoviedb.org
+18.160.10.4                 tmdb.org
 3.170.19.97                 api.tmdb.org
-3.171.38.90                 themoviedb.org
-18.160.10.93                tmdb.org
-3.170.19.106                api.themoviedb.org
-3.170.42.125                files.tmdb.org
-152.233.22.97               image.tmdb.org
-156.146.43.65               images.tmdb.org
-3.170.3.12                  auth.themoviedb.org
+3.170.19.94                 api.themoviedb.org
+3.170.42.109                files.tmdb.org
 3.171.38.81                 www.themoviedb.org
+3.170.3.12                  auth.themoviedb.org
+169.150.236.98              image.tmdb.org
+185.93.1.247                images.tmdb.org
 
 # === IMDB ===
-44.215.137.99               imdb.com
+98.82.155.134               imdb.com
 18.67.70.32                 www.imdb.com
 18.67.70.32                 secure.imdb.com
+98.82.155.134               us.dd.imdb.com
 18.67.70.32                 s.media-imdb.com
-98.82.158.179               us.dd.imdb.com
-44.215.137.99               origin-www.imdb.com
-151.101.129.16              f.media-amazon.com
-18.67.76.14                 imdb-video.media-imdb.com
-18.165.78.137               ia.media-imdb.com
 18.67.70.32                 www.imdb.to
+98.82.155.134               origin-www.imdb.com
+151.101.1.16                f.media-amazon.com
+18.67.76.79                 imdb-video.media-imdb.com
+13.226.226.202              ia.media-imdb.com
 
 # === THETVDB ===
-3.170.35.80                 api.thetvdb.com
 3.171.75.86                 thetvdb.com
+3.170.35.80                 api.thetvdb.com
 13.226.210.61               artworks.thetvdb.com
-# Update time: 2026-08-02T06:58:47+08:00
+# Update time: 2026-08-02T19:20:06+08:00
 # Tmdb Hosts End
