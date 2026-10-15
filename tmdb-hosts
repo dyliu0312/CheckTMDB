@@ -1,30 +1,30 @@
 # Tmdb Hosts Start
 # === TMDB ===
-108.159.227.27              themoviedb.org
-13.32.205.37                api.tmdb.org
-3.170.103.59                api.themoviedb.org
-3.167.163.38                files.tmdb.org
-18.160.200.56               tmdb.org
-108.159.227.37              www.themoviedb.org
-185.93.1.249                image.tmdb.org
-185.93.1.242                images.tmdb.org
-99.86.77.68                 auth.themoviedb.org
+18.238.96.106               tmdb.org
+18.238.109.40               files.tmdb.org
+65.8.20.79                  api.themoviedb.org
+18.155.173.53               api.tmdb.org
+18.155.173.111              themoviedb.org
+18.155.173.32               www.themoviedb.org
+169.150.249.166             image.tmdb.org
+52.85.132.21                auth.themoviedb.org
+143.244.49.177              images.tmdb.org
 
 # === IMDB ===
-98.82.158.179               imdb.com
-3.168.36.161                s.media-imdb.com
+44.215.137.99               imdb.com
+18.155.172.74               www.imdb.com
+18.155.172.74               secure.imdb.com
+18.155.172.74               s.media-imdb.com
 98.82.155.134               us.dd.imdb.com
-3.168.36.161                secure.imdb.com
-98.82.158.179               origin-www.imdb.com
-151.101.1.16                f.media-amazon.com
-143.204.236.210             ia.media-imdb.com
-3.168.36.161                www.imdb.to
-3.168.36.161                www.imdb.com
-52.85.12.129                imdb-video.media-imdb.com
+18.155.172.74               www.imdb.to
+44.215.137.99               origin-www.imdb.com
+65.8.193.164                ia.media-imdb.com
+151.101.129.16              f.media-amazon.com
+18.238.109.51               imdb-video.media-imdb.com
 
 # === THETVDB ===
-3.162.172.98                thetvdb.com
-3.167.162.86                api.thetvdb.com
-13.226.54.77                artworks.thetvdb.com
-# Update time: 2026-10-15T08:22:05+08:00
+65.8.197.76                 thetvdb.com
+65.8.197.76                 api.thetvdb.com
+18.238.91.71                artworks.thetvdb.com
+# Update time: 2026-10-15T22:46:27+08:00
 # Tmdb Hosts End
