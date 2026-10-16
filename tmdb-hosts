@@ -1,30 +1,30 @@
 # Tmdb Hosts Start
 # === TMDB ===
-108.159.227.37              themoviedb.org
-18.160.200.6                tmdb.org
-3.170.103.16                api.themoviedb.org
-13.32.205.37                api.tmdb.org
-3.167.163.84                files.tmdb.org
-108.159.227.111             www.themoviedb.org
-143.244.60.193              image.tmdb.org
-99.86.77.92                 auth.themoviedb.org
-169.150.236.98              images.tmdb.org
+13.225.196.47               themoviedb.org
+13.225.196.127              api.tmdb.org
+13.225.196.113              api.themoviedb.org
+3.162.3.99                  files.tmdb.org
+13.225.196.76               www.themoviedb.org
+13.225.196.17               auth.themoviedb.org
+185.93.1.247                image.tmdb.org
+185.93.1.249                images.tmdb.org
+13.225.196.109              tmdb.org
 
 # === IMDB ===
 98.82.155.134               imdb.com
-3.168.36.161                www.imdb.com
-3.168.36.161                secure.imdb.com
-3.168.36.161                s.media-imdb.com
-98.82.155.134               origin-www.imdb.com
-151.101.193.16              f.media-amazon.com
-52.85.12.71                 imdb-video.media-imdb.com
-3.168.36.161                www.imdb.to
-98.82.155.134               us.dd.imdb.com
-3.170.102.25                ia.media-imdb.com
+3.161.212.141               www.imdb.com
+3.161.212.141               s.media-imdb.com
+3.161.212.141               secure.imdb.com
+44.215.137.99               us.dd.imdb.com
+44.215.137.99               origin-www.imdb.com
+151.101.129.16              f.media-amazon.com
+3.162.5.202                 ia.media-imdb.com
+3.161.212.141               www.imdb.to
+3.161.213.68                imdb-video.media-imdb.com
 
 # === THETVDB ===
-3.162.172.98                thetvdb.com
-3.167.162.86                api.thetvdb.com
-13.226.54.77                artworks.thetvdb.com
-# Update time: 2026-10-16T08:09:52+08:00
+3.162.8.79                  artworks.thetvdb.com
+3.162.4.101                 thetvdb.com
+3.162.4.101                 api.thetvdb.com
+# Update time: 2026-10-16T22:40:57+08:00
 # Tmdb Hosts End
